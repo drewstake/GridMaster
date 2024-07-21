@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { joinGame, makeMove, restartGame } from "../gameUtils";
+import '../App.css'; // Import App.css for styles
 
 const GridMaster = () => {
   const { gameId } = useParams();
@@ -92,7 +93,9 @@ const GridMaster = () => {
 
       const winnerInfo = calculateWinner(newBoard);
       const gameOver = winnerInfo !== null;
-      const highlightedSquares = gameOver ? winnerInfo.line : prevState.xIsNext ? [newMoves[0]] : [newMoves[0]];
+      const highlightedSquares = gameOver
+        ? winnerInfo.line
+        : newMoves.length === 3 ? [newMoves[0]] : [];
 
       const updatedState = {
         board: newBoard,
@@ -126,15 +129,12 @@ const GridMaster = () => {
     const isRemovingSquare = 
       (gameState.xIsNext && gameState.xMoves.length === 3 && gameState.xMoves[0] === i) ||
       (!gameState.xIsNext && gameState.oMoves.length === 3 && gameState.oMoves[0] === i);
-    
-    const isHighlighted = gameState.highlightedSquares.includes(i);
 
     const classNames = [
       "square",
       value,
       isWinningSquare ? "highlight" : "",
-      isRemovingSquare ? "remove-highlight" : "",
-      isHighlighted ? "highlight" : ""
+      isRemovingSquare ? "remove-highlight" : ""
     ].filter(Boolean).join(" ");
     
     console.log(`Square ${i}: value=${value}, isWinningSquare=${isWinningSquare}, isRemovingSquare=${isRemovingSquare}, classNames=${classNames}`);
