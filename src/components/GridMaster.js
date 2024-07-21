@@ -13,6 +13,7 @@ const GridMaster = () => {
     gameOver: false,
     winner: null,
     winningLine: null,
+    highlightedSquares: [],
     loading: true,
     error: null,
   });
@@ -38,6 +39,7 @@ const GridMaster = () => {
             gameOver: typeof data.gameOver === 'boolean' ? data.gameOver : false,
             winner: data.winner || null,
             winningLine: data.winningLine || null,
+            highlightedSquares: data.highlightedSquares || [],
             loading: false,
           };
           console.log("Updated game state:", newState);
@@ -90,6 +92,7 @@ const GridMaster = () => {
 
       const winnerInfo = calculateWinner(newBoard);
       const gameOver = winnerInfo !== null;
+      const highlightedSquares = gameOver ? winnerInfo.line : prevState.xIsNext ? [newMoves[0]] : [newMoves[0]];
 
       const updatedState = {
         board: newBoard,
@@ -99,6 +102,7 @@ const GridMaster = () => {
         gameOver,
         winner: winnerInfo ? winnerInfo.player : null,
         winningLine: winnerInfo ? winnerInfo.line : null,
+        highlightedSquares,
       };
 
       console.log("Updated state after move:", updatedState);
@@ -123,11 +127,14 @@ const GridMaster = () => {
       (gameState.xIsNext && gameState.xMoves.length === 3 && gameState.xMoves[0] === i) ||
       (!gameState.xIsNext && gameState.oMoves.length === 3 && gameState.oMoves[0] === i);
     
+    const isHighlighted = gameState.highlightedSquares.includes(i);
+
     const classNames = [
       "square",
       value,
       isWinningSquare ? "highlight" : "",
-      isRemovingSquare ? "remove-highlight" : ""
+      isRemovingSquare ? "remove-highlight" : "",
+      isHighlighted ? "highlight" : ""
     ].filter(Boolean).join(" ");
     
     console.log(`Square ${i}: value=${value}, isWinningSquare=${isWinningSquare}, isRemovingSquare=${isRemovingSquare}, classNames=${classNames}`);
