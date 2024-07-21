@@ -1,5 +1,5 @@
 import { ref, set, onValue, push } from "firebase/database";
-import { database } from "./firebaseConfig"; // Adjust the path as needed
+import { database } from "./firebaseConfig";
 
 export const createGame = async () => {
   const gamesRef = ref(database, 'games');
@@ -12,6 +12,7 @@ export const createGame = async () => {
     oMoves: [],
     gameOver: false,
     winner: null,
+    winningLine: null,
   };
 
   await set(newGameRef, initialState);
@@ -44,6 +45,7 @@ export const makeMove = (gameId, gameState) => {
     oMoves: Array.isArray(gameState.oMoves) ? gameState.oMoves : [],
     gameOver: gameState.gameOver !== undefined ? gameState.gameOver : false,
     winner: gameState.winner !== undefined ? gameState.winner : null,
+    winningLine: Array.isArray(gameState.winningLine) ? gameState.winningLine : null,
   };
 
   set(gameRef, cleanedGameState);
@@ -58,6 +60,7 @@ export const restartGame = (gameId) => {
     oMoves: [],
     gameOver: false,
     winner: null,
+    winningLine: null,
   };
   set(gameRef, initialState);
 };

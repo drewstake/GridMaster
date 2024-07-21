@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { joinGame, makeMove, restartGame } from "../gameUtils";
 
 const GridMaster = () => {
   const { gameId } = useParams();
+  const navigate = useNavigate();
   const [gameState, setGameState] = useState({
     board: Array(9).fill(null),
     xIsNext: true,
@@ -11,12 +12,15 @@ const GridMaster = () => {
     oMoves: [],
     gameOver: false,
     winner: null,
+    winningLine: null,
     loading: true,
     error: null,
   });
 
   useEffect(() => {
+    console.log("Joining game with ID:", gameId);
     joinGame(gameId, (data) => {
+      console.log("Received game data:", data);
       if (data.error) {
         setGameState((prevState) => ({
           ...prevState,
@@ -24,16 +28,21 @@ const GridMaster = () => {
           loading: false,
         }));
       } else {
-        setGameState((prevState) => ({
-          ...prevState,
-          board: Array.isArray(data.board) ? data.board : Array(9).fill(null),
-          xIsNext: typeof data.xIsNext === 'boolean' ? data.xIsNext : true,
-          xMoves: Array.isArray(data.xMoves) ? data.xMoves : [],
-          oMoves: Array.isArray(data.oMoves) ? data.oMoves : [],
-          gameOver: typeof data.gameOver === 'boolean' ? data.gameOver : false,
-          winner: data.winner || null,
-          loading: false,
-        }));
+        setGameState((prevState) => {
+          const newState = {
+            ...prevState,
+            board: Array.isArray(data.board) ? data.board : Array(9).fill(null),
+            xIsNext: typeof data.xIsNext === 'boolean' ? data.xIsNext : true,
+            xMoves: Array.isArray(data.xMoves) ? data.xMoves : [],
+            oMoves: Array.isArray(data.oMoves) ? data.oMoves : [],
+            gameOver: typeof data.gameOver === 'boolean' ? data.gameOver : false,
+            winner: data.winner || null,
+            winningLine: data.winningLine || null,
+            loading: false,
+          };
+          console.log("Updated game state:", newState);
+          return newState;
+        });
       }
     });
   }, [gameId]);
@@ -52,28 +61,35 @@ const GridMaster = () => {
     for (let i = 0; i < lines.length; i++) {
       const [a, b, c] = lines[i];
       if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-        return { player: board[a], line: [a, b, c] };
+        console.log("Winner found:", board[a], "Line:", lines[i]);
+        return { player: board[a], line: lines[i] };
       }
     }
     return null;
   };
 
   const handleClick = (i) => {
+    console.log("Square clicked:", i);
     setGameState((prevState) => {
-      if (prevState.gameOver || prevState.board[i]) return prevState;
+      if (prevState.gameOver || prevState.board[i]) {
+        console.log("Invalid move. Game over or square already filled.");
+        return prevState;
+      }
 
       const newBoard = [...prevState.board];
       const newMoves = prevState.xIsNext ? [...prevState.xMoves] : [...prevState.oMoves];
 
       if (newMoves.length === 3) {
-        newBoard[newMoves.shift()] = null;
+        const removedSquare = newMoves.shift();
+        console.log("Removing piece from square:", removedSquare);
+        newBoard[removedSquare] = null;
       }
 
       newBoard[i] = prevState.xIsNext ? "X" : "O";
       newMoves.push(i);
 
-      const winner = calculateWinner(newBoard);
-      const gameOver = winner !== null;
+      const winnerInfo = calculateWinner(newBoard);
+      const gameOver = winnerInfo !== null;
 
       const updatedState = {
         board: newBoard,
@@ -81,9 +97,11 @@ const GridMaster = () => {
         xMoves: prevState.xIsNext ? newMoves : prevState.xMoves,
         oMoves: !prevState.xIsNext ? newMoves : prevState.oMoves,
         gameOver,
-        winner: winner ? winner.player : null,
+        winner: winnerInfo ? winnerInfo.player : null,
+        winningLine: winnerInfo ? winnerInfo.line : null,
       };
 
+      console.log("Updated state after move:", updatedState);
       makeMove(gameId, updatedState);
 
       return updatedState;
@@ -91,32 +109,52 @@ const GridMaster = () => {
   };
 
   const handleRestartGame = () => {
+    console.log("Restarting game");
     restartGame(gameId);
   };
 
+  const handleBack = () => {
+    navigate('/');
+  };
+
   const renderSquare = (value, i) => {
-    const isWinningSquare =
-      gameState.winner &&
-      calculateWinner(gameState.board)?.line.includes(i);
-    const isRemovingSquare = gameState.xIsNext
-      ? gameState.xMoves.length === 3 && gameState.xMoves[0] === i
-      : gameState.oMoves.length === 3 && gameState.oMoves[0] === i;
+    const isWinningSquare = gameState.winningLine && gameState.winningLine.includes(i);
+    const isRemovingSquare = 
+      (gameState.xIsNext && gameState.xMoves.length === 3 && gameState.xMoves[0] === i) ||
+      (!gameState.xIsNext && gameState.oMoves.length === 3 && gameState.oMoves[0] === i);
+    
+    const classNames = [
+      "square",
+      value,
+      isWinningSquare ? "highlight" : "",
+      isRemovingSquare ? "remove-highlight" : ""
+    ].filter(Boolean).join(" ");
+    
+    console.log(`Square ${i}: value=${value}, isWinningSquare=${isWinningSquare}, isRemovingSquare=${isRemovingSquare}, classNames=${classNames}`);
+    
     return (
       <button
         key={i}
         onClick={() => handleClick(i)}
-        className={`square ${value} ${isWinningSquare ? "highlight" : ""} ${isRemovingSquare ? "remove-highlight" : ""}`}
+        className={classNames}
+        data-winning={isWinningSquare}
+        data-removing={isRemovingSquare}
       >
         {value}
       </button>
     );
   };
 
+  useEffect(() => {
+    console.log("Current game state:", gameState);
+  }, [gameState]);
+
   if (gameState.loading) return <div>Loading...</div>;
   if (gameState.error) return <div>{gameState.error}</div>;
 
   return (
     <div className="App">
+      <button onClick={handleBack} className="back-button">Back</button>
       <h2 className="mb-4">
         {gameState.gameOver
           ? `Winner: ${gameState.winner}`
