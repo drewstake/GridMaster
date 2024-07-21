@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { joinGame, makeMove } from "../gameUtils";
+import './App.css'; // Ensure the CSS file is imported
 
 const Game = () => {
   const { gameId } = useParams();

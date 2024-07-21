@@ -1,5 +1,6 @@
 import { ref, set, onValue, push } from "firebase/database";
 import { database } from "./firebaseConfig";
+import './App.css'; // Ensure the CSS file is imported
 
 export const createGame = async () => {
   const gamesRef = ref(database, 'games');
