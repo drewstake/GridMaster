@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { joinGame, makeMove, restartGame } from "../gameUtils";
-import '../App.css'; // Import App.css for styles
 
-const GridMaster = () => {
-  const { gameId } = useParams();
+const GridMaster = ({ gameId: propGameId }) => {
+  const { gameId: paramGameId } = useParams();
   const navigate = useNavigate();
+  const gameId = propGameId || paramGameId;
   const [gameState, setGameState] = useState({
     board: Array(9).fill(null),
     xIsNext: true,
@@ -20,6 +20,7 @@ const GridMaster = () => {
   });
 
   useEffect(() => {
+    if (!gameId) return;
     console.log("Joining game with ID:", gameId);
     joinGame(gameId, (data) => {
       console.log("Received game data:", data);
@@ -93,9 +94,7 @@ const GridMaster = () => {
 
       const winnerInfo = calculateWinner(newBoard);
       const gameOver = winnerInfo !== null;
-      const highlightedSquares = gameOver
-        ? winnerInfo.line
-        : newMoves.length === 3 ? [newMoves[0]] : [];
+      const highlightedSquares = gameOver ? winnerInfo.line : [];
 
       const updatedState = {
         board: newBoard,
@@ -129,12 +128,15 @@ const GridMaster = () => {
     const isRemovingSquare = 
       (gameState.xIsNext && gameState.xMoves.length === 3 && gameState.xMoves[0] === i) ||
       (!gameState.xIsNext && gameState.oMoves.length === 3 && gameState.oMoves[0] === i);
+    
+    const isHighlighted = isRemovingSquare && ((gameState.xIsNext && gameState.xMoves.length === 3) || (!gameState.xIsNext && gameState.oMoves.length === 3));
 
     const classNames = [
       "square",
       value,
       isWinningSquare ? "highlight" : "",
-      isRemovingSquare ? "remove-highlight" : ""
+      isRemovingSquare ? "remove-highlight" : "",
+      isHighlighted ? "highlight" : ""
     ].filter(Boolean).join(" ");
     
     console.log(`Square ${i}: value=${value}, isWinningSquare=${isWinningSquare}, isRemovingSquare=${isRemovingSquare}, classNames=${classNames}`);
@@ -161,15 +163,16 @@ const GridMaster = () => {
 
   return (
     <div className="App">
-      <button onClick={handleBack} className="back-button">Back</button>
+      {!propGameId && (
+        <button onClick={handleBack} className="back-button">
+          Back
+        </button>
+      )}
       <h2 className="mb-4">
-        {gameState.gameOver
-          ? `Winner: ${gameState.winner}`
-          : `Next player: ${gameState.xIsNext ? "X" : "O"}`}
+        {gameState.gameOver ? `Winner: ${gameState.winner}` : `Next player: ${gameState.xIsNext ? "X" : "O"}`}
       </h2>
       <div className="grid">
-        {Array.isArray(gameState.board) &&
-          gameState.board.map((value, i) => renderSquare(value, i))}
+        {Array.isArray(gameState.board) && gameState.board.map((value, i) => renderSquare(value, i))}
       </div>
       {gameState.gameOver && (
         <button onClick={handleRestartGame} className="restart-button">
