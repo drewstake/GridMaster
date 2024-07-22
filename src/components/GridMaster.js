@@ -3,9 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { joinGame, makeMove, restartGame } from "../gameUtils";
 
 const GridMaster = ({ gameId: propGameId }) => {
+  console.log("GridMaster component rendered");
   const { gameId: paramGameId } = useParams();
   const navigate = useNavigate();
   const gameId = propGameId || paramGameId;
+  console.log("Game ID:", gameId);
   const [gameState, setGameState] = useState({
     board: Array(9).fill(null),
     xIsNext: true,
@@ -20,11 +22,16 @@ const GridMaster = ({ gameId: propGameId }) => {
   });
 
   useEffect(() => {
-    if (!gameId) return;
+    console.log("GridMaster useEffect triggered");
+    if (!gameId) {
+      console.log("No game ID provided");
+      return;
+    }
     console.log("Joining game with ID:", gameId);
     joinGame(gameId, (data) => {
       console.log("Received game data:", data);
       if (data.error) {
+        console.error("Error joining game:", data.error);
         setGameState((prevState) => ({
           ...prevState,
           error: data.error,
@@ -52,6 +59,7 @@ const GridMaster = ({ gameId: propGameId }) => {
   }, [gameId]);
 
   const calculateWinner = (board) => {
+    console.log("Calculating winner");
     const lines = [
       [0, 1, 2],
       [3, 4, 5],
@@ -69,6 +77,7 @@ const GridMaster = ({ gameId: propGameId }) => {
         return { player: board[a], line: lines[i] };
       }
     }
+    console.log("No winner found");
     return null;
   };
 
@@ -120,6 +129,7 @@ const GridMaster = ({ gameId: propGameId }) => {
   };
 
   const handleBack = () => {
+    console.log("Navigating back to home");
     navigate('/');
   };
 
@@ -158,9 +168,16 @@ const GridMaster = ({ gameId: propGameId }) => {
     console.log("Current game state:", gameState);
   }, [gameState]);
 
-  if (gameState.loading) return <div>Loading...</div>;
-  if (gameState.error) return <div>{gameState.error}</div>;
+  if (gameState.loading) {
+    console.log("GridMaster is loading");
+    return <div>Loading...</div>;
+  }
+  if (gameState.error) {
+    console.log("GridMaster error:", gameState.error);
+    return <div>{gameState.error}</div>;
+  }
 
+  console.log("Rendering GridMaster");
   return (
     <div className="App">
       {!propGameId && (

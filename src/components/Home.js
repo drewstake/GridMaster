@@ -3,6 +3,7 @@ import { createGame, generateInviteLink } from "../gameUtils";
 import GridMaster from "./GridMaster";
 
 const Home = () => {
+  console.log("Home component rendered");
   const [inviteLink, setInviteLink] = useState("");
   const [gameId, setGameId] = useState(null);
 
@@ -12,6 +13,7 @@ const Home = () => {
       const newGameId = await createGame();
       const link = generateInviteLink(newGameId);
       console.log("Game created with ID:", newGameId);
+      console.log("Invite link generated:", link);
       setInviteLink(link);
       setGameId(newGameId);
     } catch (error) {
@@ -19,6 +21,7 @@ const Home = () => {
     }
   };
 
+  console.log("Rendering Home component");
   return (
     <div className="App">
       <h1>Welcome to GridMaster!</h1>

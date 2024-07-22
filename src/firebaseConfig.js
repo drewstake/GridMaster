@@ -12,7 +12,14 @@ const firebaseConfig = {
   databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
 };
 
+console.log("Initializing Firebase app with config:", {
+  ...firebaseConfig,
+  apiKey: firebaseConfig.apiKey ? "******" : undefined,
+});
+
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
+
+console.log("Firebase app initialized");
 
 export { app, database };
