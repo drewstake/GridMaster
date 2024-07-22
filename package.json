@@ -2,6 +2,7 @@
   "name": "gridmaster",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://master.d29jrtkkvlqe3x.amplifyapp.com/",
   "dependencies": {
     "firebase": "^10.12.4",
     "react": "^18.3.1",
