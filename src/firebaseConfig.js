@@ -1,3 +1,4 @@
+// firebaseConfig.js
 import { initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
@@ -9,17 +10,10 @@ const firebaseConfig = {
   messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.REACT_APP_FIREBASE_APP_ID,
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
-  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+  databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL
 };
-
-console.log("Initializing Firebase app with config:", {
-  ...firebaseConfig,
-  apiKey: firebaseConfig.apiKey ? "******" : undefined,
-});
 
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
-
-console.log("Firebase app initialized");
 
 export { app, database };

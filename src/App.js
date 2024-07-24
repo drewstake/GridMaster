@@ -5,7 +5,6 @@ import GridMaster from './components/GridMaster';
 import './App.css';
 
 function App() {
-  console.log("App component rendered");
   return (
     <Router>
       <div className="App">
